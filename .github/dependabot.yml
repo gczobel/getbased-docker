@@ -7,10 +7,8 @@ updates:
       interval: "weekly"
     ignore:
       # get-based's package.json pins "engines.node" to "24.x". A major bump
-      # (24 -> 25) isn't safe to take blindly until upstream has verified it;
-      # calibre-mcp took this exact hit on a Python major bump (PR #1,
-      # reverted) because nothing gated it. Patch-level refreshes of the
-      # 24-slim image are still allowed.
+      # (24 -> 25) isn't safe to take blindly until upstream has verified it.
+      # Patch-level refreshes of the 24-slim image are still allowed.
       - dependency-name: "node"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: "github-actions"
