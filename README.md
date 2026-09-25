@@ -2,7 +2,7 @@
 
 A ready-to-run Docker image for [`elkimek/get-based`](https://github.com/elkimek/get-based) — the open-source [getbased](https://getbased.health) health dashboard (labs, DNA/SNPs, wearables, light exposure, Biology Scores, optional AI).
 
-This repo doesn't fork or modify the upstream project. It just packages it as a container image and keeps that image rebuilt on a schedule, so the underlying Node/OS base image and upstream's code both stay current without manual bumping — same idea as [`calibre-mcp`](https://github.com/gczobel/calibre-mcp), applied here.
+This repo doesn't fork or modify the upstream project. It just packages it as a container image and keeps that image rebuilt on a schedule, so the underlying Node/OS base image and upstream's code both stay current without manual bumping.
 
 ## Why a separate repo, and why this shape
 
@@ -46,7 +46,7 @@ Put a reverse proxy with TLS in front of it (or a Tailscale/VPN overlay) rather 
 
 ## Auto-merge and security posture
 
-- **Dependabot** watches the `docker` (base image) and `github-actions` ecosystems weekly. Node major/minor bumps are excluded from auto-updates (get-based's `package.json` pins `engines.node` to `24.x`; a floated major version isn't safe to take blindly — see `calibre-mcp`'s reverted Python-major-bump PR for why this matters).
+- **Dependabot** watches the `docker` (base image) and `github-actions` ecosystems weekly. Node major/minor bumps are excluded from auto-updates (get-based's `package.json` pins `engines.node` to `24.x`; a floated major version isn't safe to take blindly).
 - **`dependabot-auto-merge.yml`** enables auto-merge on Dependabot PRs that aren't major-version bumps, as soon as they're opened.
 - **`dependabot-backlog-sweep.yml`** runs daily (and after every push to `main`) to catch any Dependabot PR the event-triggered workflow missed — a `pull_request`-triggered workflow doesn't retroactively attach to PRs that were already open when it was added.
 - A branch protection **ruleset** on `main` requires the `build` check (the image actually builds) to pass before anything merges, including auto-merged Dependabot PRs — so a base-image bump that breaks the build gets held for review instead of merging blind.
