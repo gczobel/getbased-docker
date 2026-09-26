@@ -11,6 +11,11 @@ RUN git clone --branch "$GETBASED_REF" --depth 1 \
     https://github.com/elkimek/get-based.git /app
 WORKDIR /app
 
+# dev-server.js is only free of a build step, not of node_modules — it
+# transitively imports npm packages (e.g. undici, via lib/proxy-network.js)
+# that upstream's own "no build step needed" self-hosting note glosses over.
+RUN npm ci
+
 # dev-server.js binds 127.0.0.1 (loopback) by default so it stays off the
 # LAN unless explicitly opted in — inside a container that means nothing
 # outside the container could reach it, so this image opts in by default.
