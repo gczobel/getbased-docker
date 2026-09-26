@@ -1,8 +1,8 @@
 diff --git a/js/api-openrouter.js b/js/api-openrouter.js
-index a9834f00..0b41135c 100644
+index a9834f00..ff59e9d3 100644
 --- a/js/api-openrouter.js
 +++ b/js/api-openrouter.js
-@@ -52,13 +52,22 @@ function openRouterMandatoryReasoningEffort(modelId) {
+@@ -52,14 +52,36 @@ function openRouterMandatoryReasoningEffort(modelId) {
  export async function callOpenRouterAPI(opts) {
    const key = getOpenRouterKey();
    const modelId = String(opts?.modelOverride || getOpenRouterModel());
@@ -24,7 +24,22 @@ index a9834f00..0b41135c 100644
 +  if (reasoningEffortNone) {
      requestOpts = { ...opts };
 -    if (mandatoryReasoning.effort) requestOpts.reasoningEffort = mandatoryReasoning.effort;
-+    if (mandatoryReasoning?.effort) requestOpts.reasoningEffort = mandatoryReasoning.effort;
-     else delete requestOpts.reasoningEffort;
+-    else delete requestOpts.reasoningEffort;
++    if (mandatoryReasoning?.effort) {
++      requestOpts.reasoningEffort = mandatoryReasoning.effort;
++      // Models with always-on extended thinking (mandatory reasoning) don't
++      // expose a tunable temperature — Anthropic's endpoints for these
++      // don't declare `temperature` in supported_parameters at all.
++      // Verified live: with require_parameters true, jsonMode +
++      // temperature: 0 alone 404s "No endpoints found" for
++      // anthropic/claude-sonnet-5; dropping temperature (or dropping
++      // require_parameters) succeeds. Callers like pdf-import.js send a
++      // hardcoded temperature: 0 for deterministic extraction, which is
++      // meaningless for these models anyway since it's never honored.
++      delete requestOpts.temperature;
++    } else {
++      delete requestOpts.reasoningEffort;
++    }
    }
    if (isAppExtensionAICredentialOwned('openrouter')) {
+     const authorized = await authorizeAppExtensionAIRequest({

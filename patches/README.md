@@ -24,3 +24,16 @@ which model is selected.
 Verified against OpenRouter's live `/api/v1/models/{id}/endpoints` for both
 `anthropic/claude-sonnet-5` and `openai/gpt-4o-mini`: neither declares
 support for a `'none'` reasoning effort tier.
+
+A second, independent bug lives in the same function and the same patch:
+models with always-on extended thinking (mandatory reasoning, e.g.
+`anthropic/claude-sonnet-5`) don't expose a tunable `temperature` at all —
+their OpenRouter endpoints never declare `temperature` in
+`supported_parameters`. `pdf-import.js` sends a hardcoded `temperature: 0`
+unconditionally (for deterministic extraction), which alone is enough to
+zero out every endpoint once `require_parameters: true` is set, independent
+of the reasoning-effort bug above. Verified live against the real API:
+`jsonMode` + `temperature: 0` + no reasoning field still 404s for
+`anthropic/claude-sonnet-5`; dropping `temperature` (or dropping
+`require_parameters`) succeeds. The patch drops `temperature` specifically
+for models flagged mandatory-reasoning, where it was never honored anyway.
