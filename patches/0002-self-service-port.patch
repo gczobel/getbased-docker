@@ -1,0 +1,26 @@
+diff --git a/js/sync-relay-health.js b/js/sync-relay-health.js
+index bfd19e65..a8e83030 100644
+--- a/js/sync-relay-health.js
++++ b/js/sync-relay-health.js
+@@ -124,9 +124,8 @@ function _getSelfBaseUrl() {
+     u.pathname = '';
+     u.search = '';
+     u.hash = '';
+-    if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') {
+-      u.port = '4003';
+-    }
++    // Explicit port = self-hosted relay (RELAY_PORT/SELF_PORT convention).
++    if (u.port) u.port = '4003';
+     return u.toString().replace(/\/$/, '');
+   } catch { return null; }
+ }
+diff --git a/version.js b/version.js
+index 4e5d0933..f67a6fbf 100644
+--- a/version.js
++++ b/version.js
+@@ -2,4 +2,4 @@
+ // Classic script (not ES module) so it works in both browser and service worker.
+ // Browser: <script src="version.js"> sets global APP_VERSION
+ // Service worker: importScripts('/version.js') sets self.APP_VERSION
+-self.APP_VERSION = '1.21.0';
++self.APP_VERSION = '1.21.1';

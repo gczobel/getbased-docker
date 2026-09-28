@@ -37,3 +37,26 @@ of the reasoning-effort bug above. Verified live against the real API:
 `anthropic/claude-sonnet-5`; dropping `temperature` (or dropping
 `require_parameters`) succeeds. The patch drops `temperature` specifically
 for models flagged mandatory-reasoning, where it was never honored anyway.
+
+## 0002-self-service-port.patch
+
+`_getSelfBaseUrl` (`js/sync-relay-health.js`) only swapped to the relay's
+self-service port (`SELF_PORT`, default 4003) when the relay's hostname was
+literally `localhost` or `127.0.0.1`. Any self-hosted `getbased-relay`
+reached by LAN IP or a real hostname — this stack's own relay included —
+kept the WS-only relay port (`RELAY_PORT`, default 4000) for every
+`/self/*` call (Reduce storage, Push now, owner-storage refresh). That port
+has no plain-HTTP handler, so the request just hangs until timeout instead
+of reaching the relay's actual self-service server.
+
+The patch swaps on "the wss:// URL has an explicit port" instead of a
+hostname allowlist — every self-hosted relay following the documented
+`RELAY_PORT`/`SELF_PORT` convention carries an explicit port; the public
+default relay (and any deployment path-routing `/self/*` behind the same
+reverse proxy on 443) does not, and is left untouched. Also bumps
+`version.js` per this project's own convention for any app-file change (busts
+the service worker cache for existing users) — merged upstream in the fork
+without it. Merged into `gczobel/get-based` as
+[#1](https://github.com/gczobel/get-based/pull/1) and
+[#2](https://github.com/gczobel/get-based/pull/2); not yet in
+`elkimek/get-based` upstream.
