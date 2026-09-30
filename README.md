@@ -14,7 +14,7 @@ Upstream's own [self-hosting guide](https://docs.getbased.health/guides/self-hos
 
 ## Image
 
-Published to `ghcr.io/gczobel/getbased-docker:latest` on every push to `main`, on a weekly schedule (Mondays), and via manual dispatch. Each rebuild re-clones `elkimek/get-based`'s `main` branch fresh on top of a freshly-pulled `node:24-slim`, so both upstream code changes and base-image security patches land automatically.
+Published to `ghcr.io/gczobel/getbased-docker:latest` on every push to `main`, on a weekly schedule (Mondays), and via manual dispatch. Each rebuild re-clones `main` of [gczobel/get-based](https://github.com/gczobel/get-based) (upstream plus a few unmerged fixes, listed in [FORK_CHANGES.md](FORK_CHANGES.md)) on top of a freshly-pulled `node:24-slim`. The fork merges `elkimek/get-based` weekly, so upstream changes and base-image security patches still land automatically. Override `GETBASED_REPO` to build straight from upstream.
 
 Given how actively upstream moves (issue churn is high for a young project — see the [due-diligence notes](#a-note-on-upstream) below), you may prefer pinning to a tagged release instead of tracking `main`. Do that at build time:
 
