@@ -16,14 +16,24 @@ WORKDIR /app
 # fails and the patch is skipped with a warning rather than breaking the
 # build — see patches/README.md for what each one fixes and why.
 COPY patches/ /tmp/patches/
-RUN for p in /tmp/patches/*.patch; do \
+# Patches must not edit version.js: upstream bumps it every release, so a
+# patch on it would stop applying and be skipped. The service worker cache is
+# keyed by APP_VERSION though, so browsers would keep serving stale code after
+# a patched image update; tag the version with a hash of the patches applied.
+RUN applied=""; \
+    for p in /tmp/patches/*.patch; do \
       [ -e "$p" ] || continue; \
       if git apply --check "$p" 2>/dev/null; then \
-        git apply "$p" && echo "applied $(basename "$p")"; \
+        git apply "$p" && echo "applied $(basename "$p")" && applied="$applied $p"; \
       else \
         echo "WARNING: skipping $(basename "$p") — no longer applies cleanly against $GETBASED_REF"; \
       fi; \
-    done
+    done; \
+    if [ -n "$applied" ]; then \
+      tag=$(cat $applied | sha256sum | cut -c1-8); \
+      sed -i "s/\(self\.APP_VERSION = '[^']*\)'/\1+gb${tag}'/" version.js; \
+    fi; \
+    grep APP_VERSION version.js
 
 # dev-server.js is only free of a build step, not of node_modules — it
 # transitively imports npm packages (e.g. undici, via lib/proxy-network.js)

@@ -53,10 +53,36 @@ The patch swaps on "the wss:// URL has an explicit port" instead of a
 hostname allowlist — every self-hosted relay following the documented
 `RELAY_PORT`/`SELF_PORT` convention carries an explicit port; the public
 default relay (and any deployment path-routing `/self/*` behind the same
-reverse proxy on 443) does not, and is left untouched. Also bumps
-`version.js` per this project's own convention for any app-file change (busts
-the service worker cache for existing users) — merged upstream in the fork
-without it. Merged into `gczobel/get-based` as
+reverse proxy on 443) does not, and is left untouched. Merged into
+`gczobel/get-based` as
 [#1](https://github.com/gczobel/get-based/pull/1) and
 [#2](https://github.com/gczobel/get-based/pull/2); not yet in
 `elkimek/get-based` upstream.
+
+## 0003-manual-body-readings-sync.patch
+
+Manual weight, blood pressure and pulse readings (with tags and notes) live in
+a per-browser store that never synced, so a second device joined to the same
+Sync identity started with an empty history. This adds a synced
+`manualBodyReadings` map, one row per `<field>.<date>` (the same key shape as
+the existing deletion markers). Logging and deleting update it explicitly;
+after a pull, or when a profile is opened, the entries are written back into
+the local store; a one-time add-only backfill pushes pre-existing history. The
+inbound half lives in a new lazily loaded module, `wearables-manual-sync.js`.
+
+Merged into `gczobel/get-based` as
+[#4](https://github.com/gczobel/get-based/pull/4) (closes its issue #3);
+design record in ADR 0001 on that fork's
+`docs/context-manual-body-readings` branch. Not in upstream. The fork's tests,
+budgets, `MODULE_MAP.md` and `ARCHITECTURE.md` changes are deliberately not
+part of this patch; only runtime files are.
+
+## Why no patch touches `version.js`
+
+Upstream bumps `version.js` on every release, so a patch on it stops applying
+and is skipped along with everything else in that patch. The service worker's
+cache is keyed by that version though, so browsers would keep serving stale
+code after a patched image update. The Dockerfile therefore appends
+`+gb<hash of the applied patches>` to `APP_VERSION` at build time (for example
+`1.22.0+gbac2fa2cd`), which changes whenever upstream releases or a patch
+changes.
