@@ -16,9 +16,11 @@ WORKDIR /app
 # The service worker cache is keyed by APP_VERSION, and the fork can change
 # without an upstream version bump. Tag the version with the fork commit so
 # browsers drop stale caches after an image update (for example 1.22.0+gb1a2b3c4).
+# Since upstream's TypeScript migration, version.js is generated from
+# version.ts by the build below, so patch the source before it compiles.
 RUN sha=$(git rev-parse --short=8 HEAD) && \
-    sed -i "s/\(self\.APP_VERSION = '[^']*\)'/\1+gb${sha}'/" version.js && \
-    grep APP_VERSION version.js
+    sed -i "s/\(self\.APP_VERSION = '[^']*\)'/\1+gb${sha}'/" version.ts && \
+    grep APP_VERSION version.ts
 
 # dev-server.js is only free of a build step, not of node_modules. It
 # transitively imports npm packages (e.g. undici, via lib/proxy-network.js)
