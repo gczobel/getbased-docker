@@ -35,4 +35,8 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           no-cache: true
-          tags: ghcr.io/${{ github.repository_owner }}/getbased-docker:latest
+          # A per-build tag keeps the previous image pullable for rollback;
+          # `latest` is overwritten by every build.
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/getbased-docker:latest
+            ghcr.io/${{ github.repository_owner }}/getbased-docker:build-${{ github.run_number }}
