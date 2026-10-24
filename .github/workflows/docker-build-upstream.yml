@@ -1,0 +1,41 @@
+name: Build upstream image (no fork changes)
+
+# Manual only. Builds elkimek/get-based as-is and publishes it under the
+# `upstream` tag, so it can be run next to the fork build (`latest`) to tell
+# whether a bug is in upstream or in the fork.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "elkimek/get-based branch, tag or commit"
+        default: main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: build upstream
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          no-cache: true
+          build-args: |
+            GETBASED_REPO=https://github.com/elkimek/get-based.git
+            GETBASED_REF=${{ inputs.ref }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/getbased-docker:upstream
